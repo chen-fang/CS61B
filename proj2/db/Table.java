@@ -10,19 +10,19 @@ import java.util.List;
  * Created by BlackIce on 2017/7/7.
  */
 public class Table implements Iterable {
-    private String[] _columnNames = null;
-    private ArrayList<Row> _rows = new ArrayList<>();
+    String[]       columnNames = null;
+    ArrayList<Row> rows        = new ArrayList<>();
 
     /** Initialize an empty table with selected column names */
     public Table(String[] columnNames) {
-        _columnNames = columnNames;
+        this.columnNames = columnNames;
     }
 
     /** Load a table from the specified file */
     public Table(String filename) {
         In in = new In (filename);
         String line = in.readLine();
-        _columnNames = line.split(",");
+        this.columnNames = line.split(",");
         while (!in.isEmpty()) {
             line = in.readLine();
             Row row = new Row(line.split(","));
@@ -30,77 +30,139 @@ public class Table implements Iterable {
         }
     }
 
-    /** Print table to screen */
-    public void print() {
-        for (int i = 0; i < numColumns()-1; i++) {
-            System.out.print(_columnNames[i] + ",  ");
-        }
-        System.out.println(_columnNames[numColumns()-1]);
-        for (int i = 0; i < numRows(); i++) {
-            Row row = _rows.get(i);
-            for (int j = 0; j < numColumns()-1; j++) {
-                System.out.print(row.get(j)+ ",  ");
-            }
-            System.out.println(row.get(numColumns()-1));
-        }
-    }
-
+    /** Get number of columns in this table */
     public int numColumns() {
-        return _columnNames.length;
+        return this.columnNames.length;
     }
 
+    /** Get number of rows in this table */
     public int numRows() {
-        return _rows.size();
+        return this.rows.size();
     }
 
-    public Column find (String columnName) {
+    /** Test if a column with name exists in this table.
+     *  If found: return the column index
+     *  If not:   return -1
+     */
+    int contains (String name) {
         for (int i = 0; i < numColumns(); i++) {
-            if (_columnNames[i].equals(columnName))
-                return new Column(i);
+            String columnName = columnNames[i];
+            if (columnName.equals(name))
+                return i;
         }
-        return null;
+        return -1;
     }
 
-    public void addRow (Row row) {
-        _rows.add(row);
+    /** Find a column with [name] in this table */
+    Column findColumn(String name) {
+        return Column.findColumn(name,this);
     }
 
-    public Row getRow(int index) {
-        return _rows.get(index);
+    /** Add a row in this table */
+    void addRow (Row row) {
+        this.rows.add(row);
+    }
+
+    /** Get the i-th row in this table */
+    Row getRow(int index) {
+        return this.rows.get(index);
     }
 
     @Override
     public Iterator<Row> iterator() {
-        return _rows.iterator();
+        return this.rows.iterator();
     }
 
-    /** Assume, for the moment, that all column names CAN be found in the given table.
-     *
-     * @param columnNames
-     * @param table
-     * @return
+    /** Select one or multiple columns from the specified table.
+     *  TODO: Assume all columnNames CAN be found in the given table.
      */
     public static Table select (String[] columnNames, Table table) {
-        Table t = new Table(columnNames);
+        Table returnTable = new Table(columnNames);
         ArrayList<Column> listColumn = new ArrayList<>();
         for (String name : columnNames) {
-            Column column = table.find(name);
+            Column column = table.findColumn(name);
             listColumn.add(column);
         }
         for (Object eachRow : table) {
-            Row row = ((Row)eachRow).getFrom(listColumn);
-            t.addRow(row);
+            Row row = ((Row)eachRow).subRow(listColumn);
+            returnTable.addRow(row);
         }
-        return t;
+        return returnTable;
+    }
+
+    /** Select multiple columns from two tables.
+    /*  TODO[1]: Assume all columnNames CAN be found in the specified tables.
+     *  TODO[2]: Assume commonColumnNames CAN be found in the specified tables.
+     *  TODO[3]: GIANT function. Split it up.
+     */
+    public static Table select (String[] columnNames, Table table1, Table table2) {
+        Table returnTable = new Table(columnNames);
+
+        /* find shared column names from two tables */
+        List<Column> commonColumns1 = new ArrayList<>();
+        List<Column> commonColumns2 = new ArrayList<>();
+        for (String name : table1.columnNames) {
+            Column[] common = Column.findCommonColumns(name,table1,table2);
+            if (common != null) {
+                commonColumns1.add(common[0]);
+                commonColumns2.add(common[1]);
+            }
+        }
+
+        /* Create a list of selected columns with the same order as input.
+         * According to the assumption, a column can be found in table2 if
+         * it cannot be found in table1.
+         */
+        ArrayList<Column> selectedColumns = new ArrayList<>();
+        for (String name : columnNames) {
+            Column column = Column.findColumn(name,table1,table2);
+            selectedColumns.add(column);
+        }
+
+        /* Invariants:
+         * row1 must come from table1.
+         * row2 must come from table2.
+         */
+        for (Row row1 : table1.rows) {
+            Row[] listRows = new Row[2];
+            listRows[0] = row1;
+            Row r1 = row1.subRow(commonColumns1);
+            for (Row row2 : table2.rows) {
+                Row r2 = row2.subRow(commonColumns2);
+                if (r1.equals(r2)) { /* elements under shared column names are equal */
+                    listRows[1] = row2;
+                    Row r = new Row(selectedColumns, listRows);
+                    returnTable.addRow(r);
+                }
+            }
+        }
+        return returnTable;
     }
 
     public boolean equals(Table table) {
-        boolean flag = Arrays.deepEquals(this._columnNames, table._columnNames);
+        boolean flag = Arrays.deepEquals(this.columnNames, table.columnNames);
         for (int i = 0; i < numRows(); i++) {
-            Row thisRow = _rows.get(i);
-            Row thatRow = table._rows.get(i);
-            flag = Arrays.deepEquals(thisRow._content, thatRow._content);
+            Row thisRow = rows.get(i);
+            Row thatRow = table.rows.get(i);
+            flag = Arrays.deepEquals(thisRow.content, thatRow.content);
         }
         return flag;
+    }
+
+    /** Print column names */
+    private void printColumnNames() {
+        int length = numColumns();
+        for (int i = 0; i < length-1; i++) {
+            System.out.print(this.columnNames[i] + ",  ");
+        }
+        System.out.println(this.columnNames[length-1]);
+    }
+    /** Print table to screen */
+    public void print() {
+        printColumnNames();
+        for (int i = 0; i < numRows(); i++) {
+            Row row = this.rows.get(i);
+            row.print();
+        }
     }
 }

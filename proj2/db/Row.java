@@ -4,36 +4,60 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
  * Created by BlackIce on 2017/7/7.
  */
 public class Row {
-    protected String[] _content;
+    protected String[] content;
 
     /** Initialize an empty row with specified size */
-    public Row(int n) {
-        _content = new String[n];
+    Row(int n) {
+        this.content = new String[n];
     }
 
-    public Row(String[] content) {
-        _content = content;
+    /** Initialize a row with given content */
+    Row(String[] content) {
+        this.content = content;
     }
 
-    public String get(int i) {
-        return _content[i];
+    /** Objective:
+     *  Assemble a row from multiple columns and two rows.
+     *
+     *  Applied in:
+     *  Table.select(String[] columnNames, Table table1, Table table2).
+     *
+     * @param selectedColumns: list of selected columns
+     * @param listRows: list of rows where specific elements should be retrieved.
+     *                  Invariants:
+     *                  Row[0] comes from table1
+     *                  Row[1] comes from table2.
+     *
+     */
+    Row(List<Column> selectedColumns, Row[] listRows) {
+        int length = selectedColumns.size();
+        this.content = new String[length];
+        for (int i = 0; i < length; i++) {
+            Column column = selectedColumns.get(i);
+            Row row = listRows[column.getTableIndex()];
+            this.content[i] = row.getElement(column);
+        }
     }
 
+    /** Retrieve the i-th element in this row */
+    private String get(int i) {
+        return this.content[i];
+    }
+
+    /** Retrieve the element under specified [column] in this row */
     private String getElement(Column column) {
-        return _content[column._columnIndex];
+        return get(column.getColumnIndex());
     }
 
-    private void addElement(int index, String element) {
-        _content[index] = element;
-    }
-
-    public Row getFrom(List<Column> listColumns) {
+    /** Get a subRow from thisRow based on specified columns */
+    public Row subRow(List<Column> listColumns) {
         int length = listColumns.size();
         String[] content = new String[length];
         for (int i = 0; i < length; i++) {
@@ -43,37 +67,19 @@ public class Row {
         return new Row(content);
     }
 
-    public static class testRow {
-        /** One row, one column */
-        @Test
-        public void testGetFrom01() {
-            Table table = new Table("examples/t1.tbl");
-
-            Column column = new Column(1);
-            ArrayList<Column> columnList = new ArrayList<>();
-            columnList.add(column);
-
-            Row row1 = table.getRow(1);
-            Row actual = row1.getFrom(columnList);
-            Row expect = new Row (new String[]{"3"});
-            assertArrayEquals(actual._content, expect._content);
-        }
-        /** One row, multiple columns */
-        @Test
-        public void testGetFrom02() {
-            Table table = new Table("examples/t1.tbl");
-
-            ArrayList<Column> columnList = new ArrayList<>();
-            Column column0 = new Column(0);
-            columnList.add(column0);
-            Column column1 = new Column(1);
-            columnList.add(column1);
-
-            Row row2 = table.getRow(2);
-            Row actual = row2.getFrom(columnList);
-            Row expect = new Row (new String[]{"13","7"});
-            assertArrayEquals(expect._content, actual._content);
-        }
+    /** Test if two rows are equal */
+    public boolean equals(Row other) {
+        return Arrays.equals (this.content, other.content);
     }
+
+    void print() {
+        int length = this.content.length;
+        for (int j = 0; j < length-1; j++) {
+            System.out.print(this.get(j)+ ",  ");
+        }
+        System.out.println(this.get(length-1));
+    }
+
+    /** Unit tests */
 
 }
