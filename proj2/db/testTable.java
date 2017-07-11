@@ -86,6 +86,72 @@ public class testTable {
 
         String[] selectedColumnNames = new String[]{"City string","Season int", "Wins int"};
         Table newTable = Table.select(selectedColumnNames, table1, table2);
-        newTable.print();
+        // newTable.print();
+    }
+
+    /** Cartesian join */
+    @Test
+    public void testCartesian() {
+        // TODO
+    }
+
+    /** select "x int" from "t1.tbl" where x > 5
+     *  Identical column in both [select] and [condition]
+     */
+    @Test
+    public void testSelectCondition01() {
+        Table table = new Table("examples/t1.tbl");
+        Condition condition = new Condition("x int", ">", "5");
+        String[] selectedColumnNames = new String[]{"x int"};
+        Table actual = table.select(selectedColumnNames, condition);
+
+        /* create expected table */
+        Table expect = new Table(selectedColumnNames);
+        String[] content;
+        content = new String[]{"8"}; // 1st row
+        expect.addRow(new Row(content));
+        content = new String[]{"13"}; // 2nd row
+        expect.addRow(new Row(content));
+
+        assertTrue(actual.equals(expect));
+    }
+
+    /** select "x int" from "t2.tbl" where z < 7
+     *  Different columns in [select] and [condition]
+     */
+    @Test
+    public void testSelectCondition02() {
+        Table table = new Table("examples/t2.tbl");
+        Condition condition = new Condition("z int", "<", "7");
+        String[] selectedColumnNames = new String[]{"x int"};
+        Table actual = table.select(selectedColumnNames, condition);
+
+        /* create expected table */
+        Table expect = new Table(selectedColumnNames);
+        String[] content;
+        content = new String[]{"2"}; // 1st row
+        expect.addRow(new Row(content));
+        content = new String[]{"10"}; // 2nd row
+        expect.addRow(new Row(content));
+
+        assertTrue(actual.equals(expect));
+    }
+
+    /** select "z int" from "t2.tbl" where x > 3, z < 7 */
+    @Test
+    public void testSelectCondition03() {
+        Table table = new Table("examples/t2.tbl");
+        Condition condition0 = new Condition("x int", ">", "3");
+        Condition condition1 = new Condition("z int", "<", "7");
+        String[] selectedColumnNames = new String[]{"z int"};
+        Table actual = table.select(selectedColumnNames, condition0, condition1);
+
+        /* create expected table */
+        Table expect = new Table(selectedColumnNames);
+        String[] content;
+        content = new String[]{"1"}; // 1st row
+        expect.addRow(new Row(content));
+
+        assertTrue(actual.equals(expect));
     }
 }

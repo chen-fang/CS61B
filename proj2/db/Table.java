@@ -90,10 +90,19 @@ public class Table implements Iterable {
         return returnTable;
     }
 
+    /** Select [columns] from this table that agree with all [conditions] */
+    public Table select (String[] columnNames, Condition...conditions) {
+        Table filterTable = this;
+        for (Condition condition : conditions) {
+            filterTable = condition.evaluateTable(filterTable);
+        }
+        return Table.select(columnNames, filterTable);
+    }
+
     /** Select multiple columns from two tables.
     /*  TODO[1]: Assume all columnNames CAN be found in the specified tables.
      *  TODO[2]: Assume commonColumnNames CAN be found in the specified tables.
-     *  TODO[3]: GIANT function. Split it up.
+     *  TODO[3]: Cartesian join is NOT supported for the moment.
      */
     public static Table select (String[] columnNames, Table table1, Table table2) {
         Table returnTable = new Table(columnNames);
@@ -139,8 +148,12 @@ public class Table implements Iterable {
         return returnTable;
     }
 
+    /** Test if two tables are completely equal in terms of table elements */
     public boolean equals(Table table) {
         boolean flag = Arrays.deepEquals(this.columnNames, table.columnNames);
+        if (flag == false) {
+            return flag;
+        }
         for (int i = 0; i < numRows(); i++) {
             Row thisRow = rows.get(i);
             Row thatRow = table.rows.get(i);

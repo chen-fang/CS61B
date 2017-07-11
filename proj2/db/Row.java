@@ -52,7 +52,7 @@ public class Row {
     }
 
     /** Retrieve the element under specified [column] in this row */
-    private String getElement(Column column) {
+    String getElement(Column column) {
         return get(column.getColumnIndex());
     }
 
