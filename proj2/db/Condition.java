@@ -1,45 +1,36 @@
 package db;
 
+import java.util.regex.Pattern;
+
 /**
  * Created by BlackIce on 2017/7/11.
- * TODO: literal is assumed to be of int type
  */
-public class Condition {
-    // Table  table;
-    String columnName;
-    String operator;
-    int    literal;
+public abstract class Condition {
+    String _colName0;
+    String _operator;
+    String _operand;
 
-    Condition(String columnName, String operator, String literal) {
-        this.columnName = columnName;
-        this.operator = operator;
-        this.literal = Integer.parseInt(literal);
+    Condition(String c0, String operator, String operand) {
+        _colName0 = c0;
+        _operator = operator;
+        _operand  = operand;
     }
 
-    boolean evaluateOperation(int elem) {
+
+    static boolean compare(String elem, String operator, String literal) {
+        int v = elem.compareTo(literal);
         switch(operator) {
-            case "==": return elem == this.literal;
-            case "!=": return elem != this.literal;
-            case "<=": return elem <= this.literal;
-            case ">=": return elem >= this.literal;
-            case "<":  return elem <  this.literal;
-            case ">":  return elem >  this.literal;
+            case "==": return v == 0;
+            case "!=": return v != 0;
+            case "<=": return v <= 0;
+            case ">=": return v >= 0;
+            case "<":  return v < 0;
+            case ">":  return v > 0;
         }
         // TODO: exception: none of the above tests were performed.
         return false;
     }
 
-    /** Return table with rows that satisfy this specific condition */
-    Table evaluateTable(Table table) {
-        Column column = table.findColumn(this.columnName);
-        Table returnTable = new Table(table.columnNames);
-        for (Row row : table.rows) {
-            String elemString = row.getElement(column);
-            int elem = Integer.parseInt(elemString);
-            boolean isPass = evaluateOperation(elem);
-            if (isPass == true)
-                returnTable.addRow(row);
-        }
-        return returnTable;
-    }
+    abstract Table evaluate(Table table);
+
 }

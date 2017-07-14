@@ -1,39 +1,38 @@
 package db;
-
 import org.junit.Test;
 import static org.junit.Assert.*;
 
 /**
- * Created by BlackIce on 2017/7/11.
+ * Created by BlackIce on 2017/7/14.
  */
 public class testCondition {
     @Test
-    public void testEvaluateOperation() {
-        Table table = new Table("examples/t1.tbl");
-        Condition condition = new Condition("x int", ">", "5");
+    public void testCompare() {
+        Table table = Table.loadTable("examples/t1.tbl");
+        Condition condition = new ConditionUnary("x int", ">", "5");
         Row row0 = table.getRow(0);
         Row row1 = table.getRow(1);
         Row row2 = table.getRow(2);
 
-        Column column = table.findColumn(condition.columnName);
+        Column column = table.findColumn(condition._colName0);
 
-        int e0 = Integer.parseInt(row0.getElement(column));
-        int e1 = Integer.parseInt(row1.getElement(column));
-        int e2 = Integer.parseInt(row2.getElement(column));
+        String e0 = row0.getElement(column);
+        String e1 = row1.getElement(column);
+        String e2 = row2.getElement(column);
 
-        assertFalse(condition.evaluateOperation(e0));
-        assertTrue(condition.evaluateOperation(e1));
-        assertTrue(condition.evaluateOperation(e2));
+        assertFalse(condition.compare(e0, condition._operator, condition._operand));
+        assertTrue(condition.compare(e1, condition._operator, condition._operand));
+        assertTrue(condition.compare(e2, condition._operator, condition._operand));
     }
 
+    /** select * from t1 where x > 5 */
     @Test
-    public void testEvaluateTable01() {
-        Table table = new Table("examples/t1.tbl");
-        Condition condition = new Condition("x int", ">", "5");
-        Table actual = condition.evaluateTable(table);
-
+    public void testConditionUnaryEvaluate01() {
+        Table table = Table.loadTable("examples/t1.tbl");
+        Condition condition = new ConditionUnary("x", ">", "5");
+        Table actual = condition.evaluate(table);
         /* create expected table */
-        Table expect = new Table(table.columnNames);
+        Table expect = new Table(table.columnNames, table);
         String[] content;
         content = new String[]{"8","3"}; // 1st row
         expect.addRow(new Row(content));
@@ -43,14 +42,14 @@ public class testCondition {
         assertTrue(actual.equals(expect));
     }
 
+    /** select * from t2 where z < 8 */
     @Test
-    public void testEvaluateTable02() {
-        Table table = new Table("examples/t2.tbl");
-        Condition condition = new Condition("z int", "<", "7");
-        Table actual = condition.evaluateTable(table);
-
+    public void testConditionUnaryEvaluate02() {
+        Table table = Table.loadTable("examples/t2.tbl");
+        Condition condition = new ConditionUnary("z", "<", "7");
+        Table actual = condition.evaluate(table);
         /* create expected table */
-        Table expect = new Table(table.columnNames);
+        Table expect = new Table(table.columnNames, table);
         String[] content;
         content = new String[]{"2","4"}; // 1st row
         expect.addRow(new Row(content));

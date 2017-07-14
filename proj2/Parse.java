@@ -1,15 +1,27 @@
+import db.Table;
+
+import java.io.Console;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
 import java.util.StringJoiner;
 
 public class Parse {
-    // Various common constructs, simplifies parsing.
+    /** Various common constructs, simplifies parsing.
+     *  REST  matches: anything, surrounded by arbitrary number of white spaces in the front
+     *                 and in the back,  including 0 white space.
+     *  COMMA matches: a single comma(,) surrounded by arbitrary number of white spaces
+     *                 in the front and in the back,  including 0 white space.
+     *  AND   matches: "and", surrounded by at least (1) white space in the front and in the
+     *                 back.
+     */
     private static final String REST  = "\\s*(.*)\\s*",
                                 COMMA = "\\s*,\\s*",
                                 AND   = "\\s+and\\s+";
 
-    // Stage 1 syntax, contains the command name.
+    /** Stage 1 syntax, contains the command name.
+     *  Identifies the keyword and make corresponding calls to perform Stage 2 parsing.
+     */
     private static final Pattern CREATE_CMD = Pattern.compile("create table " + REST),
                                  LOAD_CMD   = Pattern.compile("load " + REST),
                                  STORE_CMD  = Pattern.compile("store " + REST),
@@ -31,12 +43,15 @@ public class Parse {
                                                "\\s*(?:,\\s*.+?\\s*)*)");
 
     public static void main(String[] args) {
-        if (args.length != 1) {
-            System.err.println("Expected a single query argument");
-            return;
+        Console console = System.console();
+        if (console == null) {
+            System.err.println("No console.");
+            System.exit(1);;
         }
-
-        eval(args[0]);
+        while (true) {
+            String command = console.readLine("Input: ");
+            eval(command);
+        }
     }
 
     private static void eval(String query) {
@@ -79,6 +94,7 @@ public class Parse {
 
         String colSentence = joiner.toString() + " and " + cols[cols.length-1];
         System.out.printf("You are trying to create a table named %s with the columns %s\n", name, colSentence);
+        // Table name = new Table(colSentence);
     }
 
     private static void createSelectedTable(String name, String exprs, String tables, String conds) {

@@ -1,9 +1,4 @@
 package db;
-
-import org.junit.Test;
-import static org.junit.Assert.*;
-
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -12,11 +7,6 @@ import java.util.List;
  */
 public class Row {
     protected String[] content;
-
-    /** Initialize an empty row with specified size */
-    Row(int n) {
-        this.content = new String[n];
-    }
 
     /** Initialize a row with given content */
     Row(String[] content) {
@@ -47,7 +37,7 @@ public class Row {
     }
 
     /** Retrieve the i-th element in this row */
-    private String get(int i) {
+    String get(int i) {
         return this.content[i];
     }
 

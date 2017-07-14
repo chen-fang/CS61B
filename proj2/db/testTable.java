@@ -14,6 +14,28 @@ public class testTable {
         table.print();
     }
 
+    /** Table(String colSentence */
+    @Test
+    public void testConstructor01() {
+        Table t0 = new Table("x int, y float,    z      string");
+        Table t1 = new Table("x   int,y    float,    z  string");
+        assertTrue(t0.equals(t1));
+        t0.print();
+        t1.print();
+    }
+
+    /** Table(String[] colNames, Table...tables) */
+    @Test
+    public void testConstructor02() {
+        Table t0 = new Table("x int, y float, z string");
+        Table t1 = new Table("b string, x int, c float");
+        String[] colNames = new String[]{"z", "c", "b", "y"};
+        Table actual = new Table(colNames, t0, t1);
+        Table expect = new Table("z string, c float, b string, y float");
+        assertTrue(actual.equals(expect));
+        actual.print();
+    }
+
     @Test
     public void testNumRowCol() {
         Table table = new Table("examples/t1.tbl");
@@ -26,9 +48,9 @@ public class testTable {
     @Test
     public void testContains() {
         Table table = new Table("examples/t1.tbl");
-        assertEquals(0, table.contains("x int"));
-        assertEquals(1, table.contains("y int"));
-        assertEquals(-1, table.contains("z int"));
+        assertEquals(0, table.contains("x"));
+        assertEquals(1, table.contains("y"));
+        assertEquals(-1, table.contains("z"));
     }
 
     @Test
@@ -36,18 +58,22 @@ public class testTable {
         // See testColumn.java
     }
 
+    /** select y from t1
+     *  Details: select (1) column from (1) table, without conditions.
+     */
     @Test
     public void testSelect01() {
-        Table table = new Table("examples/t1.tbl");
+        Table table = Table.loadTable("examples/t1.tbl");
         String[] columnNames = new String[1];
-        columnNames[0] = "y int";
+        columnNames[0] = "y";
         Table newTable = Table.select(columnNames, table);
         assertEquals(1, newTable.numColumns());
         assertEquals(3, newTable.numRows());
 
         /* create expected table */
-        String[] name = new String[]{"y int"}; // column name
-        Table expect = new Table(name);
+        String[] name = new String[]{"y"};
+        String[] type = new String[]{"int"};
+        Table expect = new Table("y int");
         String[] content;
         content = new String[]{"5"}; // 1st row
         expect.addRow(new Row(content));
@@ -60,15 +86,20 @@ public class testTable {
 
     }
 
+    /** select y, z from t1, t2
+     *  Details: select (1) column from (2) tables, respectively, without conditions.
+     *  select (1) column [y] from t1, and
+     *  select (1) column [z] from t2
+     */
     @Test
     public void testSelect02() {
-        Table table1 = new Table("examples/t1.tbl");
-        Table table2 = new Table("examples/t2.tbl");
-        String[] selectedColumnNames = new String[]{"y int","z int"};
+        Table table1 = Table.loadTable("examples/t1.tbl");
+        Table table2 = Table.loadTable("examples/t2.tbl");
+        String[] selectedColumnNames = new String[]{"y","z"};
         Table newTable = Table.select(selectedColumnNames, table1, table2);
 
         /* create expected table */
-        Table expect = new Table(selectedColumnNames);
+        Table expect = new Table(selectedColumnNames, table1, table2);
         String[] content;
         content = new String[]{"5","4"}; // 1st row
         expect.addRow(new Row(content));
@@ -78,15 +109,21 @@ public class testTable {
         assertTrue(newTable.equals(expect));
     }
 
-    /** select three columns from "records.tbl" and "teams.tbl" */
+    /** select City, Season, Wins from teams, records
+     *  Details: select (1) column and then (2) columns from (2) tables, respectively,
+     *           without conditions.
+     *  select City from teams
+     *  select Season, Wins from records
+     *  join
+     */
     @Test
     public void testSelect03() {
         Table table1 = new Table("examples/teams.tbl");
         Table table2 = new Table("examples/records.tbl");
 
-        String[] selectedColumnNames = new String[]{"City string","Season int", "Wins int"};
+        String[] selectedColumnNames = new String[]{"City","Season", "Wins"};
         Table newTable = Table.select(selectedColumnNames, table1, table2);
-        // newTable.print();
+        newTable.print();
     }
 
     /** Cartesian join */
@@ -95,61 +132,38 @@ public class testTable {
         // TODO
     }
 
-    /** select "x int" from "t1.tbl" where x > 5
-     *  Identical column in both [select] and [condition]
-     */
+
+    /** select z from t2 where x > 3, z < 7 */
     @Test
-    public void testSelectCondition01() {
-        Table table = new Table("examples/t1.tbl");
-        Condition condition = new Condition("x int", ">", "5");
-        String[] selectedColumnNames = new String[]{"x int"};
-        Table actual = table.select(selectedColumnNames, condition);
-
-        /* create expected table */
-        Table expect = new Table(selectedColumnNames);
-        String[] content;
-        content = new String[]{"8"}; // 1st row
-        expect.addRow(new Row(content));
-        content = new String[]{"13"}; // 2nd row
-        expect.addRow(new Row(content));
-
-        assertTrue(actual.equals(expect));
-    }
-
-    /** select "x int" from "t2.tbl" where z < 7
-     *  Different columns in [select] and [condition]
-     */
-    @Test
-    public void testSelectCondition02() {
-        Table table = new Table("examples/t2.tbl");
-        Condition condition = new Condition("z int", "<", "7");
-        String[] selectedColumnNames = new String[]{"x int"};
-        Table actual = table.select(selectedColumnNames, condition);
-
-        /* create expected table */
-        Table expect = new Table(selectedColumnNames);
-        String[] content;
-        content = new String[]{"2"}; // 1st row
-        expect.addRow(new Row(content));
-        content = new String[]{"10"}; // 2nd row
-        expect.addRow(new Row(content));
-
-        assertTrue(actual.equals(expect));
-    }
-
-    /** select "z int" from "t2.tbl" where x > 3, z < 7 */
-    @Test
-    public void testSelectCondition03() {
-        Table table = new Table("examples/t2.tbl");
-        Condition condition0 = new Condition("x int", ">", "3");
-        Condition condition1 = new Condition("z int", "<", "7");
-        String[] selectedColumnNames = new String[]{"z int"};
+    public void testSelectConditionUnary01() {
+        Table table = Table.loadTable("examples/t2.tbl");
+        Condition condition0 = new ConditionUnary("x", ">", "3");
+        Condition condition1 = new ConditionUnary("z", "<", "7");
+        String[] selectedColumnNames = new String[]{"z"};
         Table actual = table.select(selectedColumnNames, condition0, condition1);
-
         /* create expected table */
-        Table expect = new Table(selectedColumnNames);
+        Table expect = new Table(selectedColumnNames, table);
         String[] content;
         content = new String[]{"1"}; // 1st row
+        expect.addRow(new Row(content));
+
+        assertTrue(actual.equals(expect));
+    }
+
+    /** select x, y from t1 where x > 1, y < 6 */
+    @Test
+    public void testSelectConditionUnary02() {
+        Table table = Table.loadTable("examples/t1.tbl");
+        Condition condition0 = new ConditionUnary("x", ">", "1");
+        Condition condition1 = new ConditionUnary("y", "<", "6");
+        String[] selectedColumnNames = new String[]{"x","y"};
+        Table actual = table.select(selectedColumnNames, condition0, condition1);
+        /* create expected table */
+        Table expect = new Table(selectedColumnNames, table);
+        String[] content;
+        content = new String[]{"2","5"}; // 1st row
+        expect.addRow(new Row(content));
+        content = new String[]{"8","3"}; // 2nd row
         expect.addRow(new Row(content));
 
         assertTrue(actual.equals(expect));

@@ -4,6 +4,9 @@ import java.util.List;
 
 /**
  * Created by BlackIce on 2017/7/7.
+ * TODO: It seems there are two kinds of columns:
+ * TODO: 1). basic version:    a column is only an index and NOT associated with any table;
+ * TODO: 2). advanced version: a column is linked with a table for safe element access.
  */
 public class Column {
     private int columnIndex;
