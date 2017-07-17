@@ -9,7 +9,7 @@ import static org.junit.Assert.*;
 public class testTable {
     @Test
     public void testLoadFromFile() {
-        Table table = new Table("examples/t1.tbl");
+        Table table = Table.loadTable("examples/fans.tbl");
         System.out.println();
         table.print();
     }
@@ -38,7 +38,7 @@ public class testTable {
 
     @Test
     public void testNumRowCol() {
-        Table table = new Table("examples/t1.tbl");
+        Table table = Table.loadTable("examples/t1.tbl");
         int rows = table.numRows();
         int cols = table.numColumns();
         assertEquals(rows,3);
@@ -47,7 +47,7 @@ public class testTable {
 
     @Test
     public void testContains() {
-        Table table = new Table("examples/t1.tbl");
+        Table table = Table.loadTable("examples/t1.tbl");
         assertEquals(0, table.contains("x"));
         assertEquals(1, table.contains("y"));
         assertEquals(-1, table.contains("z"));
@@ -118,8 +118,8 @@ public class testTable {
      */
     @Test
     public void testSelect03() {
-        Table table1 = new Table("examples/teams.tbl");
-        Table table2 = new Table("examples/records.tbl");
+        Table table1 = Table.loadTable("examples/teams.tbl");
+        Table table2 = Table.loadTable("examples/records.tbl");
 
         String[] selectedColumnNames = new String[]{"City","Season", "Wins"};
         Table newTable = Table.select(selectedColumnNames, table1, table2);
@@ -167,5 +167,29 @@ public class testTable {
         expect.addRow(new Row(content));
 
         assertTrue(actual.equals(expect));
+    }
+
+    /** select Firstname,Lastname,TeamName from fans where Lastname >= 'Lee' */
+    @Test
+    public void testSelectConditionUnary03() {
+        Table table = Table.loadTable("examples/fans.tbl");
+        Condition condition = new ConditionUnary("Lastname", ">=", "'Lee'");
+        String[] selectedColumnNames = new String[]{"Firstname", "Lastname", "TeamName"};
+        Table actual = table.select(selectedColumnNames, condition);
+        actual.print();
+
+        Table expect = new Table(selectedColumnNames, table);
+        String[] content;
+        content = new String[]{"'Maurice'","'Lee'","'Mets'"};
+        expect.addRow(new Row(content));
+        content = new String[]{"'Maurice'","'Lee'","'Steelers'"};
+        expect.addRow(new Row(content));
+        content = new String[]{"'Mitas'","'Ray'","'Patriots'"};
+        expect.addRow(new Row(content));
+        content = new String[]{"'Jared'","'Rulison'","'EnVyUs'"};
+        expect.addRow(new Row(content));
+
+        assertTrue(actual.equals(expect));
+        expect.print();
     }
 }

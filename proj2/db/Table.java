@@ -107,6 +107,11 @@ public class Table implements Iterable {
         return this.columnTypes[columnIndex];
     }
 
+    /** Get column type given a specific column */
+    String getColumnType(Column col) {
+        return this.columnTypes[col.getColumnIndex()];
+    }
+
     /** Find a column based on [name] in this table */
     Column findColumn(String name) {
         return Column.findColumn(name,this);
@@ -214,16 +219,22 @@ public class Table implements Iterable {
 
     /** Test if two tables are completely equal in terms of table elements */
     public boolean equals(Table table) {
-        boolean flag = Arrays.deepEquals(this.columnNames, table.columnNames);
-        if (flag == false)
-            return flag;
-        flag = Arrays.deepEquals(this.columnTypes, table.columnTypes);
+        if (!Arrays.deepEquals(this.columnNames, table.columnNames))
+            return false;
+        if (!Arrays.deepEquals(this.columnTypes, table.columnTypes))
+            return false;
+        if (this.numColumns() != table.numColumns())
+            return false;
+        if (this.numRows() != table.numRows())
+            return false;
+
         for (int i = 0; i < numRows(); i++) {
             Row thisRow = rows.get(i);
             Row thatRow = table.rows.get(i);
-            flag = Arrays.deepEquals(thisRow.content, thatRow.content);
+            if (!Arrays.equals(thisRow.content, thatRow.content))
+                return false;
         }
-        return flag;
+        return true;
     }
 
     /** Print column names */
