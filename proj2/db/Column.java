@@ -13,7 +13,7 @@ public class Column {
     private int whichTable;
 
     /** Applied when [whichTable] doesn't matter. */
-    Column(int columnIndex) {
+    private Column(int columnIndex) {
         this.columnIndex = columnIndex;
         whichTable = -1;
     }
@@ -29,6 +29,10 @@ public class Column {
 
     int getTableIndex() {
         return whichTable;
+    }
+
+    String getColumnType(Table table) {
+        return table.getColumnType(columnIndex);
     }
 
     /** Find column with [name] in [table] */

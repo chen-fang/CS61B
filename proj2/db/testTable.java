@@ -192,4 +192,28 @@ public class testTable {
         assertTrue(actual.equals(expect));
         expect.print();
     }
+
+    /** select Mascot, YearEstablished from teams where YearEstablished > 1942 */
+    @Test
+    public void testSelectConditionUnary04 () {
+        Table table = Table.loadTable("examples/teams.tbl");
+        Condition condition = new ConditionUnary("YearEstablished", ">", "1942");
+        String[] selectedColumnNames = new String[]{"Mascot", "YearEstablished"};
+        Table actual = table.select(selectedColumnNames, condition);
+        actual.print();
+
+        Table expect = new Table(selectedColumnNames, table);
+        String[] content;
+        content = new String[]{"'Mr. Met'","1962"};
+        expect.addRow(new Row(content));
+        content = new String[]{"'Pat Patriot'","1960"};
+        expect.addRow(new Row(content));
+        content = new String[]{"NOVALUE","2012"};
+        expect.addRow(new Row(content));
+        content = new String[]{"NOVALUE","2007"};
+        expect.addRow(new Row(content));
+
+        assertTrue(actual.equals(expect));
+        expect.print();
+    }
 }

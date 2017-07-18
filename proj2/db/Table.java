@@ -15,7 +15,10 @@ public class Table implements Iterable {
     String[]       columnTypes = null;
     ArrayList<Row> rows        = new ArrayList<>();
 
-    /** Create an empty table with [colSentence], which includes all column titles. */
+    /** Initialize an empty table with [colSentence] represented as a string, which
+     *  includes all column titles (names and types) in format of:
+     *  x int, y float, z string
+     */
     private void createEmptyTable(String colSentence) {
         String[] titles = colSentence.split("\\s*,\\s*");
         this.columnNames = new String[titles.length];
@@ -28,19 +31,13 @@ public class Table implements Iterable {
         }
     }
 
+    /** Construct an empty table with [colTitles] */
     public Table(String colTitles) {
         createEmptyTable(colTitles);
     }
-    /** Initialize an empty table with selected column names and types */
-/*
-    public Table(String[] columnNames, String[] columnTypes) {
-        createEmptyTable(columnNames, columnTypes);
-    }
-*/
 
-    /** Create an empty table while trying to pick some columns with [columnNames]
-     *  from one or more specified [tables]
-     */
+
+    /** Construct an empty table when provided with [columnNames] from specified [tables] */
     Table (String[] columnNames, Table...tables) {
         StringJoiner joiner = new StringJoiner(", ");
         for (String searchName : columnNames) {
@@ -102,14 +99,13 @@ public class Table implements Iterable {
         return -1;
     }
 
-    /** Get column type associated with [name] */
+    /** Get column type at [columnIndex] in this table */
     String getColumnType(int columnIndex) {
         return this.columnTypes[columnIndex];
     }
-
-    /** Get column type given a specific column */
+    /** Get column type given a specific column from this table */
     String getColumnType(Column col) {
-        return this.columnTypes[col.getColumnIndex()];
+        return col.getColumnType(this);
     }
 
     /** Find a column based on [name] in this table */
