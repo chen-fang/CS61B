@@ -6,6 +6,7 @@ import static org.junit.Assert.*;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.Stack;
 
 /**
  * Created by BlackIce on 2017/7/18.
@@ -205,45 +206,56 @@ public class BSTMap<K extends Comparable<K>,V> implements Map61B<K,V> {
     /** Returns a Set view of the keys contained in this map. */
     @Override
     public Set<K> keySet() {
-        throw new UnsupportedOperationException();
+        Set<K> set = new HashSet<>();
+        Iterator iter = iterator();
+        while (iter.hasNext()) {
+            Object key = iter.next();
+            set.add((K)key);
+        }
+        return set;
     }
 
 
-    /**
-     * Represents one node in the linked list that stores the key-value pairs
-     * in the dictionary.
-     */
+    /** Iterator */
     @Override
     public Iterator<K> iterator() {
-        return new BSTMapIterator();
+        return new BSTMapIterator(root);
     }
 
-    private class BSTMapIterator<K> implements Iterator<K> {
-        BST t;
+    private class BSTMapIterator implements Iterator<K> {
+        Stack<BST> stack = new Stack<>();
 
-        BSTMapIterator() {
-            t = root;
+        BSTMapIterator(BST root) {
+            while (root != null) {
+                stack.push(root);
+                root = root.left;
+            }
         }
 
         @Override
         public boolean hasNext() {
-            return t != null;
+            return !stack.isEmpty();
         }
 
         @Override
         public K next() {
-            BST r = t;
+            BST t = stack.pop();
+            K retKey = t.key;
+            if (t.right != null) {
+                t = t.right;
+                while (t != null) {
+                    stack.push(t);
+                    t = t.left;
+                }
+            }
+
+            return retKey;
         }
-
-        private BST next(BST t) {
-
-        }
-
     }
 
     /** Print tree rooted in t in order of increasing key. */
     private void printInOrder(BST t) {
-        
+
     }
     /** Print in order of increasing key. */
     public void printInOrder() {
