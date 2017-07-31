@@ -5,12 +5,12 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class Percolation {
-    private int _N;
-    private int _numOpen;
-    private int _top;
-    private int _end;
-    private boolean[] _openLog;
-    private WeightedQuickUnionUF _connection;
+    private int _N; /* number of cells in x or y (square) direction */
+    private int _numOpen; /* number of open sites */
+    private int _top; /* ID for virtual site on top */
+    private int _end; /* ID for virtual site at bottom */
+    private boolean[] _openLog; /* complete mapping from _connection to indicate opening status */
+    private WeightedQuickUnionUF _connection; /* connection status */
 
 
     /**
@@ -38,10 +38,12 @@ public class Percolation {
         }
     }
 
+    /** convert from 2-D index to 1-D index */
     private int index(int row, int col) {
         return row * _N + col;
     }
 
+    /** check if (row1,col1) is located next to (row2,col2) */
     private boolean isNextTo(int row1, int col1, int row2, int col2) {
         /* if (row,col) is invalid, simply return false */
         if (row2 < 0 || row2 >= _N || col2 < 0 || col2 >= _N)
@@ -54,12 +56,13 @@ public class Percolation {
     }
 
     /**
-     * is the site (row2, col2) open and next to (row1, col1)
+     * is the site (row2, col2) both open and next to (row1, col1)
      */
     private boolean isOpenNextTo(int row1, int col1, int row2, int col2) {
         return isNextTo(row1, col1, row2, col2) && isOpen(row2, col2);
     }
 
+    /** check if (row,col) is valid */
     private void validate(int row, int col) {
         if (row < 0 || row >= _N || col <0 || col >= _N)
             throw new IllegalArgumentException("row/col is out of bounds");
@@ -99,7 +102,7 @@ public class Percolation {
      */
     public boolean isFull(int row, int col) {
         validate(row, col);
-        return isOpen(row,col) && _connection.connected(index(row,col), _top);
+        return isOpen(row,col) && _connection.connected(index(row,col), _end);
     }
 
     /**
