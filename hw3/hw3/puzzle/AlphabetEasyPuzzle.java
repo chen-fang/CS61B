@@ -58,4 +58,12 @@ public class AlphabetEasyPuzzle implements WorldState {
     public int hashCode() {
         return character;
     }
+
+    public static void main(String[] args) {
+        AlphabetEasyPuzzle w = new AlphabetEasyPuzzle('p');
+        for (WorldState state : w.neighbors()) {
+            AlphabetEasyPuzzle puzzle = (AlphabetEasyPuzzle) state;
+            System.out.println(puzzle.character);
+        }
+    }
 }
