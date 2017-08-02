@@ -6,6 +6,7 @@ import java.util.*;
 
 public class Solver {
     SearchNode _initial;
+    SearchNode _goal;
 
     /** search node to support A* algorithm */
     private class SearchNode {
@@ -13,15 +14,10 @@ public class Solver {
         private int moves; /* the number of moves made to reach this world state from the initial state */
         private SearchNode prev; /* a reference to the previous search node */
 
-        /** Constuct SearchNode. prev is null */
-        public SearchNode(WorldState state, int moves ) {
+        /** Construct SearchNode. prev is null */
+        public SearchNode(WorldState state, int moves, SearchNode prevNode ) {
             this.state = state;
             this.moves = moves;
-            this.prev = null;
-        }
-
-        /** Set the prev node of the current node */
-        public void setPrev(SearchNode prevNode) {
             this.prev = prevNode;
         }
     }
@@ -42,7 +38,12 @@ public class Solver {
      */
     public Solver(WorldState initial) {
         /* initialize the problem */
-        _initial = new SearchNode(initial, 0);
+        _initial = new SearchNode(initial, 0, null);
+        /* _initial.prev is set to be _initial itself because it helps avoid nested
+         * if-statement and repeated codes within search() method during optimization
+         * process.
+         */
+        _initial.prev = _initial;
         MinPQ<SearchNode> queue = new MinPQ<>(new SearchNodeComparator());
         queue.insert(_initial);
 
@@ -51,37 +52,28 @@ public class Solver {
     }
 
     /** Search the path with A* algorithm
-     *  @param optPrev provides the parent SearchNode prior to the current search
-     *                 attempt for the purpose of optimization.
      *  Optimization:  To reduce unnecessary exploration of useless search nodes,
      *                 when considering the neighbors of a search node,
      *                 don't enqueue a neighbor if its world state is the same as
      *                 the world state of the previous search node.
      */
-    private void search(MinPQ<SearchNode> queue, SearchNode optPrev) {
+    private void search(MinPQ<SearchNode> queue) {
         SearchNode minNode = queue.min();
         queue.delMin();
-        if (minNode.state.isGoal())
+        if (minNode.state.isGoal()) {
+            _goal = minNode;
             return;
-        for (WorldState state : minNode.state.neighbors()) {
-            if (!state.equals(optPrev.state)) {
+        }
+        for (WorldState neighbor : minNode.state.neighbors()) {
+            if (!neighbor.equals(minNode.prev.state)) {
                 int moves = minNode.moves + 1;
-                queue.insert(new SearchNode(state, moves));
-            } else {
-                System.out.println("Optimization works");
+                queue.insert(new SearchNode(neighbor, moves, minNode));
             }
         }
-        minNode.prev = queue.min();
-        search(queue, minNode);
+        search(queue);
     }
 
-    private void search(MinPQ<SearchNode> queue) {
-        /* optPrev should be initialized with null intuitively, but I chose to use
-         * queue.min() instead because it helps avoid repeated codes and nested
-         * if-statements caused by null.
-         */
-        search(queue, queue.min());
-    }
+
 
     /** Returns the minimum number of moves to solve the puzzle starting at the
      *  initial WorldState
@@ -93,12 +85,13 @@ public class Solver {
 
     /** Returns a sequence of WorldStates FROM the initial WorldState to the solution */
     public Iterable<WorldState> solution() {
-        List<WorldState> path = new ArrayList<>();
-        SearchNode p = _initial;
-        while (p != null) {
-            path.add(p.state);
+        List<WorldState> path = new LinkedList<>();
+        SearchNode p = _goal;
+        while (p != p.prev) {
+            path.add(0, p.state);
             p = p.prev;
         }
+        path.add(0, p.state);
         return path;
     }
 
