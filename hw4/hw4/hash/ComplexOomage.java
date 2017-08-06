@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import edu.princeton.cs.algs4.StdDraw;
 import java.awt.Color;
 import edu.princeton.cs.algs4.StdRandom;
+import org.junit.Test;
 
 public class ComplexOomage implements Oomage {
     protected List<Integer> params;
@@ -15,6 +16,7 @@ public class ComplexOomage implements Oomage {
         for (int x : params) {
             total = total * 256;
             total = total + x;
+            System.out.println("hashcode =" + total);
         }
         return total;
     }
@@ -76,6 +78,15 @@ public class ComplexOomage implements Oomage {
         ArrayList<Integer> params = new ArrayList<>(N);
         for (int i = 0; i < N; i += 1) {
             params.add(StdRandom.uniform(0, 255));
+        }
+        return new ComplexOomage(params);
+    }
+
+    public static ComplexOomage deadlyComplexOomage() {
+        int N = 10;
+        ArrayList<Integer> params = new ArrayList<>(10);
+        for (int j = 1; j < N; j += 1) {
+            params.add(StdRandom.uniform(0, 127));
         }
         return new ComplexOomage(params);
     }

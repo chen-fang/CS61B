@@ -11,6 +11,28 @@ public class OomageTestUtility {
          * and ensure that no bucket has fewer than N / 50
          * Oomages and no bucket has more than N / 2.5 Oomages.
          */
-        return false;
+        int[] array = new int[M];
+        for (int i = 0; i < M; i++) {
+            array[i] = 0;
+        }
+        for (Oomage s : oomages) {
+            int bucketNumber = (s.hashCode() & 0x7FFFFFF) % M;
+            array[bucketNumber] += 1;
+        }
+        int smallest = array[0];
+        int biggest = array[0];
+        for (int n : array) {
+            if (n < smallest) smallest = n;
+            if (n > biggest) biggest = n;
+        }
+
+        boolean test1 = smallest >= oomages.size() / 50;
+        boolean test2 = biggest <= oomages.size() / 2.5;
+        return test1 && test2;
+    }
+
+    public static void main(String[] args) {
+        int x = -2;
+        System.out.println(x & 0x7FFFFFF);
     }
 }
