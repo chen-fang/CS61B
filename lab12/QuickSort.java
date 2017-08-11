@@ -1,4 +1,5 @@
 import edu.princeton.cs.algs4.Queue;
+import org.junit.Test;
 
 public class QuickSort {
     /**
@@ -48,12 +49,64 @@ public class QuickSort {
             Queue<Item> unsorted, Item pivot,
             Queue<Item> less, Queue<Item> equal, Queue<Item> greater) {
         // Your code here!
+        for (Item it : unsorted) {
+            if (it.compareTo(pivot) == 0) equal.enqueue(it);
+            if (it.compareTo(pivot) <  0) less.enqueue(it);
+            if (it.compareTo(pivot) >  0) greater.enqueue(it);
+        }
     }
 
     /** Returns a Queue that contains the given items sorted from least to greatest. */
     public static <Item extends Comparable> Queue<Item> quickSort(
             Queue<Item> items) {
         // Your code here!
+        if (items.isEmpty() || items.size() == 1)
+            return items;
+
+        Queue<Item> less = new Queue<>();
+        Queue<Item> equal = new Queue<>();
+        Queue<Item> greater = new Queue<>();
+        Item pivot = getRandomItem(items);
+        partition(items, pivot, less, equal, greater);
+
+        less = quickSort(less);
+        less = catenate(less, equal);
+
+        greater = quickSort(greater);
+        items = catenate(less, greater);
+
         return items;
+    }
+
+    @Test
+    public void main() {
+        Queue<String> q = new Queue<>();
+        q.enqueue("c");
+        q.enqueue("a");
+        q.enqueue("e");
+        q.enqueue("d");
+        q.enqueue("b");
+
+        System.out.println("Original Queue: " + q);
+
+        q = QuickSort.quickSort(q);
+
+        System.out.println("Sorted Queue:   " + q);
+    }
+
+    @Test
+    public void mainDuplicate() {
+        Queue<String> q = new Queue<>();
+        q.enqueue("a");
+        q.enqueue("a");
+        q.enqueue("a");
+        q.enqueue("a");
+        q.enqueue("a");
+
+        System.out.println("Original Queue: " + q);
+
+        q = QuickSort.quickSort(q);
+
+        System.out.println("Sorted Queue:   " + q);
     }
 }
