@@ -23,7 +23,7 @@ public class RadixSort
         return null;
     }
 
-    /**
+    /** For MSD Radix Sort
      * Radix sort helper function that recursively calls itself to achieve the sorted array
      *  destructive method that changes the passed in array, asciis
      *

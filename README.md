@@ -8,3 +8,8 @@ are shifted with arithmetic operations, leading to uniform results or multiples 
 The defect in the hashcode function in ComplexOomage.java is related to this property. Compared to Hint.java, in addition to multiplying
 256 (or 2^8 which pushes bits to left by 8), the hash function adds a number in each iteration. As a result, the solution, or the
 deadly params that I am looking for, will negate this effect somehow, making hash function fail due to biased distribution.
+
+
+## Lab 13
+# Radix Sort
+Completed CountingSort.java. Not done with RadixSort yet due to lack of good tests. Will move forward and come bac for this later.
